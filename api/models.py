@@ -1,3 +1,5 @@
+import textwrap
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -13,8 +15,13 @@ class Post(models.Model):
         User, on_delete=models.CASCADE, related_name="posts"
     )
 
+    class Meta:
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
+        ordering = ('-pub_date',)
+
     def __str__(self):
-        return self.text
+        return textwrap.shorten(self.text, width=15, placeholder='...')
 
 
 class Comment(models.Model):
@@ -28,3 +35,11 @@ class Comment(models.Model):
     created = models.DateTimeField(
         "Дата добавления", auto_now_add=True, db_index=True
     )
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ('-created',)
+
+    def __str__(self):
+        return textwrap.shorten(self.text, width=15, placeholder='...')
