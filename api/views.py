@@ -1,10 +1,13 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .models import Comment, Post
+from .models import Comment, Follow, Post
 from .permissions import IsAuthorOrReadOnly
-from .serializers import CommentSerializer, PostSerializer
+from .serializers import CommentSerializer, FollowSerializer, PostSerializer
+
+User = get_user_model()
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -32,3 +35,24 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         post = get_object_or_404(Post, pk=self.kwargs['post_id'])
         return self.model.objects.filter(post=post)
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+    """Class for displaying, editing and deleting follows."""
+    queryset = Follow.objects.all()
+    serializer_class = FollowSerializer
+    permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['=user__username', ]
+    http_method_names = ['get', 'post']
+
+    def perform_create(self, serializer):
+        if serializer.is_valid():
+            following = get_object_or_404(
+                User,
+                username=self.request.data['following'],
+            )
+            serializer.save(
+                user=self.request.user,
+                following=following
+            )
