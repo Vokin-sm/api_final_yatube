@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework import viewsets, filters, status
+from rest_framework.exceptions import ParseError, NotFound
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from .models import Comment, Follow, Post, Group
 from .permissions import IsAuthorOrReadOnly
@@ -50,21 +51,28 @@ class FollowViewSet(viewsets.ModelViewSet):
     """To display and create groups."""
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
-    permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly, IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['=user__username', ]
     http_method_names = ['get', 'post']
 
     def perform_create(self, serializer):
         if serializer.is_valid():
-            following = get_object_or_404(
-                User,
-                username=self.request.data['following'],
+            following = User.objects.get(
+                username=self.request.data.get('following')
             )
-            serializer.save(
-                user=self.request.user,
-                following=following
-            )
+            if following is None:
+                raise ParseError('Не передан юзер following')
+            try:
+                serializer.save(
+                    user=self.request.user,
+                    following=following
+                )
+            except User.DoesNotExist:
+                raise NotFound('Пользователь не существует')
+
+    def get_queryset(self):
+        return Follow.objects.filter(following=self.request.user)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
