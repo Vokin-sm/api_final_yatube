@@ -12,13 +12,22 @@ User = get_user_model()
 
 class PostViewSet(viewsets.ModelViewSet):
     """Class for displaying, editing and deleting posts."""
-    queryset = Post.objects.all()
+    model = Post
     serializer_class = PostSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         if serializer.is_valid():
             serializer.save(author=self.request.user)
+
+    def get_queryset(self):
+        if 'group' in self.request.query_params.keys():
+            group = get_object_or_404(
+                Group,
+                pk=self.request.query_params['group']
+            )
+            return self.model.objects.filter(group=group)
+        return self.model.objects.all()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
