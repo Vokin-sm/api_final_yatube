@@ -3,9 +3,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .models import Comment, Follow, Post
+from .models import Comment, Follow, Post, Group
 from .permissions import IsAuthorOrReadOnly
-from .serializers import CommentSerializer, FollowSerializer, PostSerializer
+from .serializers import CommentSerializer, FollowSerializer, PostSerializer, GroupSerializer
 
 User = get_user_model()
 
@@ -38,7 +38,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(viewsets.ModelViewSet):
-    """Class for displaying, editing and deleting follows."""
+    """To display and create groups."""
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
@@ -56,3 +56,12 @@ class FollowViewSet(viewsets.ModelViewSet):
                 user=self.request.user,
                 following=following
             )
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    """To display and create groups."""
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    http_method_names = ['get', 'post']

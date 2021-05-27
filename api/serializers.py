@@ -1,10 +1,7 @@
-# from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from .models import Comment, Follow, Post
-
-# User = get_user_model()
+from .models import Comment, Follow, Post, Group
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -54,3 +51,17 @@ class FollowSerializer(serializers.ModelSerializer):
         #         fields=['user', 'following']
         #     )
         # ]
+
+    # def validate(self, data):
+    #     if data['user'] == data['following']:
+    #         raise serializers.ValidationError("Вы не можете подписаться на себя")
+    #     return data
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    """Serialization of groups."""
+
+    class Meta:
+        fields = ['title']
+        model = Group
+
