@@ -61,15 +61,10 @@ class FollowViewSet(viewsets.ModelViewSet):
             following = User.objects.get(
                 username=self.request.data.get('following')
             )
-            if following is None:
-                raise ParseError('Не передан юзер following')
-            try:
-                serializer.save(
-                    user=self.request.user,
-                    following=following
-                )
-            except User.DoesNotExist:
-                raise NotFound('Пользователь не существует')
+            serializer.save(
+                user=self.request.user,
+                following=following
+            )
 
     def get_queryset(self):
         return Follow.objects.filter(following=self.request.user)
