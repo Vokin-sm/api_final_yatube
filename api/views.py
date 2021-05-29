@@ -1,11 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework import filters, viewsets
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 
-from .models import Comment, Follow, Post, Group
+from . import serializers
+from .models import Comment, Follow, Group, Post
 from .permissions import IsAuthorOrReadOnly
-from .serializers import CommentSerializer, FollowSerializer, PostSerializer, GroupSerializer
 
 User = get_user_model()
 
@@ -13,7 +14,7 @@ User = get_user_model()
 class PostViewSet(viewsets.ModelViewSet):
     """Class for displaying, editing and deleting posts."""
     model = Post
-    serializer_class = PostSerializer
+    serializer_class = serializers.PostSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
@@ -32,7 +33,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Class for displaying, editing and deleting comments."""
-    serializer_class = CommentSerializer
+    serializer_class = serializers.CommentSerializer
     model = Comment
     permission_classes = [IsAuthorOrReadOnly]
 
@@ -49,7 +50,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class FollowViewSet(viewsets.ModelViewSet):
     """To display and create follows."""
     model = Follow
-    serializer_class = FollowSerializer
+    serializer_class = serializers.FollowSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['=user__username', ]
@@ -72,7 +73,7 @@ class FollowViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ModelViewSet):
     """To display and create groups."""
     queryset = Group.objects.all()
-    serializer_class = GroupSerializer
+    serializer_class = serializers.GroupSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter]
     http_method_names = ['get', 'post']
