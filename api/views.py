@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters, status
-from rest_framework.exceptions import ParseError, NotFound
+from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from .models import Comment, Follow, Post, Group
@@ -48,8 +47,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(viewsets.ModelViewSet):
-    """To display and create groups."""
-    queryset = Follow.objects.all()
+    """To display and create follows."""
+    model = Follow
     serializer_class = FollowSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticated]
     filter_backends = [filters.SearchFilter]
@@ -67,7 +66,7 @@ class FollowViewSet(viewsets.ModelViewSet):
             )
 
     def get_queryset(self):
-        return Follow.objects.filter(following=self.request.user)
+        return self.model.objects.filter(following=self.request.user)
 
 
 class GroupViewSet(viewsets.ModelViewSet):

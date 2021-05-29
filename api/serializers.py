@@ -70,4 +70,3 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ['title']
         model = Group
-
