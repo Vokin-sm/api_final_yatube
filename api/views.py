@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, viewsets
+from rest_framework import filters, mixins, viewsets
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 
@@ -47,14 +47,20 @@ class CommentViewSet(viewsets.ModelViewSet):
         return self.model.objects.filter(post=post)
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class CreateListViewSet(mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        viewsets.GenericViewSet):
+    """A viewset that provides `create`, and `list` actions."""
+    pass
+
+
+class FollowViewSet(CreateListViewSet):
     """To display and create follows."""
     model = Follow
     serializer_class = serializers.FollowSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['=user__username', ]
-    http_method_names = ['get', 'post']
 
     def perform_create(self, serializer):
         if serializer.is_valid():
@@ -70,10 +76,9 @@ class FollowViewSet(viewsets.ModelViewSet):
         return self.model.objects.filter(following=self.request.user)
 
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(CreateListViewSet):
     """To display and create groups."""
     queryset = Group.objects.all()
     serializer_class = serializers.GroupSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter]
-    http_method_names = ['get', 'post']
